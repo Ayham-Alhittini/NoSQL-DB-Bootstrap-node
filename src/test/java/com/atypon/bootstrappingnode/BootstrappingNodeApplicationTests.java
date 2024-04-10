@@ -6,9 +6,7 @@ import org.junit.Test;
 public class BootstrappingNodeApplicationTests {
 
 	@Test
-	public void contextLoads() {
+	public void testEncryptionDecryption() {
 
 	}
-
-
 }

@@ -1,7 +1,7 @@
 package com.atypon.bootstrappingnode.dto;
 
-public class RegisterDto {
-    public String userName;
+public class LoginDto {
     public String email;
     public String password;
+
 }
