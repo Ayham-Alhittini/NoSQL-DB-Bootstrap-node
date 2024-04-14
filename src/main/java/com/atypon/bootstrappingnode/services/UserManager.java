@@ -1,6 +1,7 @@
 package com.atypon.bootstrappingnode.services;
 
 import com.atypon.bootstrappingnode.entity.AppUser;
+import com.atypon.bootstrappingnode.util.DataEncryptor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 

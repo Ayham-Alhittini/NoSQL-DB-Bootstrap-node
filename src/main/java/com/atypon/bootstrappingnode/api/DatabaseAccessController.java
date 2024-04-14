@@ -4,7 +4,7 @@ import com.atypon.bootstrappingnode.dto.NodeConfigurationDto;
 import com.atypon.bootstrappingnode.entity.AppUser;
 import com.atypon.bootstrappingnode.entity.Database;
 import com.atypon.bootstrappingnode.secuirty.JwtService;
-import com.atypon.bootstrappingnode.services.DataEncryptor;
+import com.atypon.bootstrappingnode.util.DataEncryptor;
 import com.atypon.bootstrappingnode.services.DatabasesLoadBalancer;
 import com.atypon.bootstrappingnode.services.UserManager;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,7 +20,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/access")
-@CrossOrigin("http://localhost:4200")
+@CrossOrigin(origins = "http://localhost:4200")
 public class DatabaseAccessController {
 
     private final UserManager userManager;
@@ -39,6 +39,7 @@ public class DatabaseAccessController {
     public ResponseEntity<Database> createDB(HttpServletRequest request, @PathVariable String dbName) throws Exception {
 
         int nodePort = loadBalancer.getNextNodePort();
+        // In case user not found an unauthorized exception will occur
         String userId = authenticationService.getUserId(request);
         String apiKey = getApiKey(dbName, nodePort, userId);
         Database database = new Database(dbName, apiKey);

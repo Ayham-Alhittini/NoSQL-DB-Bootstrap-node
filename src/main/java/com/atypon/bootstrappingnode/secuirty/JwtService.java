@@ -41,11 +41,14 @@ public class JwtService {
         return null;
     }
 
-    private String getUserIdFromToken(String token) throws JWTVerificationException {
-        if (token == null) throw new JWTVerificationException("");
-        Algorithm algorithm = Algorithm.HMAC256(secret);
-        JWTVerifier verifier = JWT.require(algorithm).build();
-        DecodedJWT jwt = verifier.verify(token);
-        return jwt.getSubject();
+    private String getUserIdFromToken(String token) {
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(secret);
+            JWTVerifier verifier = JWT.require(algorithm).build();
+            DecodedJWT jwt = verifier.verify(token);
+            return jwt.getSubject();
+        } catch (Exception e) {
+            throw new JWTVerificationException("Invalid token");
+        }
     }
 }

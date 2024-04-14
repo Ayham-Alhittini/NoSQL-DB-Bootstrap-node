@@ -1,4 +1,4 @@
-package com.atypon.bootstrappingnode.services;
+package com.atypon.bootstrappingnode.util;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
@@ -16,19 +16,16 @@ public class DataEncryptor {
         Cipher cipher = Cipher.getInstance(ALGORITHM);
         cipher.init(Cipher.ENCRYPT_MODE, keySpec);
         byte[] encryptedBytes = cipher.doFinal(dataToEncrypt.getBytes());
-        return bytesToHex(encryptedBytes);
+        // Encode the bytes to a Base64 URL-safe string
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(encryptedBytes);
     }
 
-    // Convert bytes to a hexadecimal string for safer filename
-    private static String bytesToHex(byte[] bytes) {
-        StringBuilder hexString = new StringBuilder(2 * bytes.length);
-        for (byte b : bytes) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) {
-                hexString.append('0');
-            }
-            hexString.append(hex);
-        }
-        return hexString.toString();
+    public static String decrypt(String encryptedData) throws Exception {
+        byte[] decodedBytes = Base64.getUrlDecoder().decode(encryptedData);
+        SecretKeySpec keySpec = new SecretKeySpec(KEY, ALGORITHM);
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
+        cipher.init(Cipher.DECRYPT_MODE, keySpec);
+        byte[] decryptedBytes = cipher.doFinal(decodedBytes);
+        return new String(decryptedBytes);
     }
 }
