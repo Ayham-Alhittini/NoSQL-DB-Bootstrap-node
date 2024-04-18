@@ -6,6 +6,7 @@ import com.atypon.bootstrappingnode.dto.UserDto;
 import com.atypon.bootstrappingnode.entity.AppUser;
 import com.atypon.bootstrappingnode.secuirty.JwtService;
 import com.atypon.bootstrappingnode.services.UserManager;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,6 +45,17 @@ public class AuthenticationController {
             return ResponseEntity.ok(userDto);
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+    }
+
+    @GetMapping("/isAdminUser")
+    public ResponseEntity<Void> isAdminUser(HttpServletRequest request) {
+        String userId = jwtService.getUserId(request);
+        AppUser appUser = userManager.getUserById(userId);
+        if (appUser == null) {
+            return ResponseEntity.notFound().build();
+        }
+        boolean isAdmin = "ADMIN".equalsIgnoreCase(appUser.getUserRole());
+        return isAdmin ? ResponseEntity.ok().build() : ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
 }
