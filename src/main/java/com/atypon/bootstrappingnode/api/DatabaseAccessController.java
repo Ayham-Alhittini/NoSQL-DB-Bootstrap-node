@@ -5,7 +5,7 @@ import com.atypon.bootstrappingnode.entity.AppUser;
 import com.atypon.bootstrappingnode.entity.Database;
 import com.atypon.bootstrappingnode.secuirty.JwtService;
 import com.atypon.bootstrappingnode.util.DataEncryptor;
-import com.atypon.bootstrappingnode.services.DatabasesLoadBalancer;
+import com.atypon.bootstrappingnode.services.NodesLoadBalancer;
 import com.atypon.bootstrappingnode.services.UserManager;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +24,11 @@ import java.util.List;
 public class DatabaseAccessController {
 
     private final UserManager userManager;
-    private final DatabasesLoadBalancer loadBalancer;
+    private final NodesLoadBalancer loadBalancer;
     private final JwtService authenticationService;
 
     @Autowired
-    public DatabaseAccessController(UserManager userManager, DatabasesLoadBalancer loadBalancer, JwtService authenticationService) {
+    public DatabaseAccessController(UserManager userManager, NodesLoadBalancer loadBalancer, JwtService authenticationService) {
         this.userManager = userManager;
         this.loadBalancer = loadBalancer;
         this.authenticationService = authenticationService;

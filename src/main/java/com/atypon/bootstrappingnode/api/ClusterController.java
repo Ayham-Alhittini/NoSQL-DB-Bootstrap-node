@@ -1,5 +1,6 @@
 package com.atypon.bootstrappingnode.api;
 
+import com.atypon.bootstrappingnode.dto.ClusterStartDto;
 import com.atypon.bootstrappingnode.secuirty.AuthorizationService;
 import com.atypon.bootstrappingnode.services.ClusterManager;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 public class ClusterController {
 
     private boolean isClusterRunning = false;
-    private final int currentNumberOfNodes = 2;
+    private int currentNumberOfNodes;
     private final ClusterManager clusterManager;
     private final AuthorizationService authorizationService;
 
@@ -24,9 +25,10 @@ public class ClusterController {
     }
 
     @PostMapping("/start")
-    public void start(HttpServletRequest request) throws Exception {
+    public void start(HttpServletRequest request, @RequestBody ClusterStartDto clusterStartDto) throws Exception {
+        this.currentNumberOfNodes = clusterStartDto.numberOfNodes;
         authorizationService.validateAdminAuthority(request);
-        clusterManager.startCluster(currentNumberOfNodes);
+        clusterManager.createNodes(currentNumberOfNodes);
         clusterManager.configureNodes(request, currentNumberOfNodes);
         isClusterRunning = true;
     }

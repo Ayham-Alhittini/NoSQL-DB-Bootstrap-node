@@ -16,14 +16,14 @@ import java.util.List;
 @Service
 public class ClusterManager {
 
-    private final DatabasesLoadBalancer loadBalancer;
+    private final NodesLoadBalancer loadBalancer;
     @Autowired
-    public ClusterManager(DatabasesLoadBalancer loadBalancer) {
+    public ClusterManager(NodesLoadBalancer loadBalancer) {
         this.loadBalancer = loadBalancer;
     }
 
 
-    public void startCluster(int nodesCount) throws Exception {
+    public void createNodes(int nodesCount) throws Exception {
         SystemCommandExecutor commandExecutor = new SystemCommandExecutor();
         for (int nodeNumber = 1; nodeNumber <= nodesCount; nodeNumber++) {
             int portNumber = 8080 + nodeNumber;

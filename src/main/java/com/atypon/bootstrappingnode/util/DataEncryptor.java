@@ -20,12 +20,4 @@ public class DataEncryptor {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(encryptedBytes);
     }
 
-    public static String decrypt(String encryptedData) throws Exception {
-        byte[] decodedBytes = Base64.getUrlDecoder().decode(encryptedData);
-        SecretKeySpec keySpec = new SecretKeySpec(KEY, ALGORITHM);
-        Cipher cipher = Cipher.getInstance(ALGORITHM);
-        cipher.init(Cipher.DECRYPT_MODE, keySpec);
-        byte[] decryptedBytes = cipher.doFinal(decodedBytes);
-        return new String(decryptedBytes);
-    }
 }

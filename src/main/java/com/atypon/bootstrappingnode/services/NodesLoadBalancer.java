@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.concurrent.PriorityBlockingQueue;
 
 @Service
-public class DatabasesLoadBalancer {
+public class NodesLoadBalancer {
 
     private final PriorityBlockingQueue<NodeDatabases> balancer = new PriorityBlockingQueue<>();
 
