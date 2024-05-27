@@ -7,7 +7,6 @@ public class UserDto {
     public String email;
     public String userName;
     public String userRole;
-    public String accountState;
     public String token;
 
     public UserDto(AppUser appUser, String token) {
@@ -17,6 +16,5 @@ public class UserDto {
         this.email = appUser.getEmail();
         this.userName = appUser.getUsername();
         this.userRole = appUser.getUserRole();
-        this.accountState = appUser.getAccountState();
     }
 }

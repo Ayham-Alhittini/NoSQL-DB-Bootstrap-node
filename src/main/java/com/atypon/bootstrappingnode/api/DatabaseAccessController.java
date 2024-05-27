@@ -1,6 +1,5 @@
 package com.atypon.bootstrappingnode.api;
 
-import com.atypon.bootstrappingnode.dto.NodeConfigurationDto;
 import com.atypon.bootstrappingnode.entity.AppUser;
 import com.atypon.bootstrappingnode.entity.Database;
 import com.atypon.bootstrappingnode.secuirty.JwtService;
@@ -15,8 +14,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/access")
@@ -44,30 +41,24 @@ public class DatabaseAccessController {
         String apiKey = getApiKey(dbName, nodePort, userId);
         Database database = new Database(dbName, apiKey);
         AppUser appUser = userManager.getUserById(userId);
-        appUser.addToDatabases(database);
-        createDatabaseOnAssignedNode(request, nodePort, dbName);
+        createDatabaseOnAssignedNode(request, nodePort, database);
         userManager.saveUser(appUser);
         return ResponseEntity.ok(database);
     }
 
-    @GetMapping("showDbs")
-    public List<Database> showDbs(HttpServletRequest request) {
-        AppUser appUser = userManager.getUserById(authenticationService.getUserId(request));
-        return appUser.getDatabases();
-    }
 
     private String getApiKey(String database, int nodePort, String originator) throws Exception {
         String nodeAddress = String.format("http://localhost:%d", nodePort);
         return DataEncryptor.encrypt(nodeAddress, database, originator);
     }
 
-    private void createDatabaseOnAssignedNode(HttpServletRequest request, int assignedNode, String database) {
+    private void createDatabaseOnAssignedNode(HttpServletRequest request, int assignedNode, Database database) {
 
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", request.getHeader("Authorization"));
-        HttpEntity<NodeConfigurationDto> requestEntity = new HttpEntity<>(headers);
-        String requestUrl = String.format("http://localhost:%d/api/database/createDB/%s", assignedNode, database);
+        HttpEntity<Database> requestEntity = new HttpEntity<>(database, headers);
+        String requestUrl = String.format("http://localhost:%d/api/database/createDB", assignedNode);
         restTemplate.exchange(requestUrl, HttpMethod.POST, requestEntity, Void.class);
     }
 }

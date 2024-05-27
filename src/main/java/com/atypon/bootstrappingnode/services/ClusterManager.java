@@ -12,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.*;
 
 @Service
 public class ClusterManager {
@@ -44,25 +45,66 @@ public class ClusterManager {
 
 
     public void configureNodes(HttpServletRequest request, int nodesCount) throws InterruptedException {
-        Thread.sleep(10000); // wait until nodes are ready to receive requests
+        // Wait until nodes are ready to receive requests
+        Thread.sleep(10000);
 
         RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = createHeaders(request);
+
+        ExecutorService executorService = Executors.newFixedThreadPool(nodesCount);
+        List<Callable<Boolean>> tasks = createConfigurationTasks(nodesCount, restTemplate, headers);
+
+        executeTasks(executorService, tasks);
+        loadBalancer.initializeNodes(getPorts(nodesCount));
+    }
+
+    private HttpHeaders createHeaders(HttpServletRequest request) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", request.getHeader("Authorization"));
+        return headers;
+    }
 
-        for (Integer currentPort: getPorts(nodesCount)) {
-            NodeConfigurationDto nodeConfiguration = new NodeConfigurationDto();
-
-            nodeConfiguration.currentNodePort = currentPort;
-            nodeConfiguration.otherNodesPort = getPorts(nodesCount).stream().filter(p -> p.intValue() != currentPort).toList();
-
-            HttpEntity<NodeConfigurationDto> requestEntity = new HttpEntity<>(nodeConfiguration, headers);
-
-            String nodeAddress = String.format("http://host.docker.internal:%d/internal/api/bootstrap/initializeNode", currentPort);
-
-            restTemplate.exchange(nodeAddress, HttpMethod.POST, requestEntity, Void.class);
+    private List<Callable<Boolean>> createConfigurationTasks(int nodesCount, RestTemplate restTemplate, HttpHeaders headers) {
+        List<Callable<Boolean>> tasks = new ArrayList<>();
+        for (Integer currentPort : getPorts(nodesCount)) {
+            tasks.add(() -> configureNode(currentPort, nodesCount, restTemplate, headers));
         }
-        loadBalancer.initializeNodes( getPorts(nodesCount) );
+        return tasks;
+    }
+
+    private Boolean configureNode(int currentPort, int nodesCount, RestTemplate restTemplate, HttpHeaders headers) throws InterruptedException {
+        NodeConfigurationDto nodeConfiguration = new NodeConfigurationDto();
+        nodeConfiguration.currentNodePort = currentPort;
+        nodeConfiguration.otherNodesPort = getPorts(nodesCount).stream()
+                .filter(p -> p != currentPort)
+                .toList();
+
+        HttpEntity<NodeConfigurationDto> requestEntity = new HttpEntity<>(nodeConfiguration, headers);
+        String nodeAddress = String.format("http://host.docker.internal:%d/internal/api/bootstrap/initializeNode", currentPort);
+
+        boolean configured = false;
+        while (!configured) {
+            try {
+                restTemplate.exchange(nodeAddress, HttpMethod.POST, requestEntity, Void.class);
+                configured = true;
+            } catch (Exception ignored) {
+                Thread.sleep(500);
+            }
+        }
+        return true;
+    }
+
+    private void executeTasks(ExecutorService executorService, List<Callable<Boolean>> tasks) throws InterruptedException {
+        try {
+            List<Future<Boolean>> results = executorService.invokeAll(tasks);
+            for (Future<Boolean> result : results) {
+                result.get(); // waits for the task to complete
+            }
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } finally {
+            executorService.shutdown();
+        }
     }
 
     private List<Integer> getPorts(int nodesCount) {

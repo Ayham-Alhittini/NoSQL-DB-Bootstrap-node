@@ -26,6 +26,7 @@ public class ClusterController {
 
     @PostMapping("/start")
     public void start(HttpServletRequest request, @RequestBody ClusterStartDto clusterStartDto) throws Exception {
+        authorizationService.validateAdminAuthority(request);
         this.currentNumberOfNodes = clusterStartDto.numberOfNodes;
         authorizationService.validateAdminAuthority(request);
         clusterManager.createNodes(currentNumberOfNodes);
